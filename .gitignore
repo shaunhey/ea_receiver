@@ -1,3 +1,6 @@
+# Application binary
+ea_receiver
+
 # Object files
 *.o
 *.ko
