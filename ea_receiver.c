@@ -231,8 +231,9 @@ void run()
   float complex sample, last_sample;
   float angle, last_angle;
 
-  // If we have an even number of channels, the center frequency will actually be between
-  // channels. So when we decimate the signal, high and low will be flipped.
+  // If we have an even number of channels, the center frequency will actually
+  // be between channels. So when we decimate the signal, high and low will be
+  // flipped.
   if (o.num_channels % 2 == 0) {
     high_symbol = 0;
     low_symbol = 1;
@@ -252,22 +253,24 @@ void run()
 
   while ((n = fread(samples, sizeof(uint8_t) * 2, block_size, o.input)) > 0) {
 
-    // You may notice that we're not properly shifting and filtering (channelizing) the
-    // input. That's because we want to (ab)use aliasing to process multiple channels.
-    // This will result in corruption if more than one transmission is received at the
-    // same time, but we're willing to risk that to keep CPU usage low. The CRC check
-    // later will discard any corrupted messages.
+    // You may notice that we're not properly shifting and filtering
+    // (channelizing) the input. That's because we want to (ab)use aliasing to
+    // process multiple channels. This will result in corruption if more than
+    // one transmission is received at the same time, but we're willing to risk
+    // that to keep CPU usage low. The CRC check later will discard any
+    // corrupted packets.
     for (i = 0; i < n; i += o.num_channels) {
 
       // Convert to a complex float for ease of use with atan2 later
       sample = cu8_to_cf(samples[i*2], samples[i*2+1]);
 
-      // Calcuate the angle between the last sample and this one to determine if we are
-      // measuring a negative or positve instantaneous frequency.
+      // Calcuate the angle between the last sample and this one to determine
+      // if we are measuring a negative or positve instantaneous frequency.
       angle = calc_angle(sample, last_sample);
 
-      // If the polarity of the signal has flipped, we need to look at the number of
-      // samples we have received, and figure out how many (if any) symbols it represents
+      // If the polarity of the signal has flipped, we need to look at the
+      // number of samples we have received, and figure out how many (if any)
+      // symbols it represents.
       if (angle * last_angle > 0.0f) {
         sample_count++;
         noise_count = 0;
@@ -279,8 +282,9 @@ void run()
             on_symbol(symbol);
           }
         } else {
-          // If we were receiving, but the last group of samples didn't result in a
-          // symbol, we've lost sync. There are opportunities here to handle this better.
+          // If we were receiving, but the last group of samples didn't result
+          // in a symbol, we've lost sync. There are opportunities here to
+          // handle this better.
           if (g.state > STATE_SEARCHING) {
             noise_count++;
             if (noise_count > NOISE_THRESHOLD) {
@@ -301,8 +305,8 @@ void run()
 
 void init()
 {
-  // Precompute the mapping between unsigned 8-bit integers and their floating-point
-  // equivalents to reduce CPU usage.
+  // Precompute the mapping between unsigned 8-bit integers and their
+  // floating-point equivalents to reduce CPU usage.
   for (int i = 0; i < UINT8_MAX; i++) {
     float f = i;
     f -= INT8_MAX;
