@@ -357,5 +357,9 @@ int main(int argc, char *argv[])
   init();
   run();
 
+  if (o.input != stdin) {
+    fclose(o.input);
+  }
+
   return 0;
 }
